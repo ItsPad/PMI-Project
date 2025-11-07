@@ -1,0 +1,8 @@
+# Node.js
+node_modules/
+.env
+
+# Firebase Admin SDK credentials file
+*.json  # บรรทัดนี้จะทำให้ไฟล์ .json ทุกไฟล์ไม่ถูก track โดย Git
+        # หรือถ้าอยากเฉพาะเจาะจงก็ใส่ชื่อไฟล์ไปเลย:
+        # pmi-project-39c76-firebase-adminsdk-fbsvc-a1d4df47b5.jso
