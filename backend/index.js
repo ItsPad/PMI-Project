@@ -1,12 +1,15 @@
+require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors'); // เพิ่ม CORS เข้ามา!
 const app = express();
 const PORT = process.env.PORT || 3000; // ใช้ Port จาก Environment Variable หรือ 3000
 
+const firebaseServiceAccountFilename = process.env.FIREBASE_SERVICE_ACCOUNT_FILENAME;
+
 // --- Firebase Admin SDK Setup ---
 // !!! สำคัญ: เปลี่ยนชื่อไฟล์ให้ตรงกับ Service Account Key ของคุณ !!!
-const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-a1d4df47b5.json'); 
+const serviceAccount = require(`./${firebaseServiceAccountFilename}`); 
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -72,6 +75,47 @@ app.post('/api/submit-pressure', async (req, res) => {
     res.status(500).json({ message: '❌ ไม่สามารถบันทึกข้อมูลลง Firebase ได้' });
   }
 });
+// API สำหรับดึงข้อมูลความดันย้อนหลังตาม userId
+app.get('/api/pressures/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ message: '⚠️ กรุณาระบุ userId ให้ถูกต้อง' });
+  }
+
+  try {
+    const snapshot = await db.collection('blood_pressure')
+      .where('userId', '==', userId)
+      .orderBy('timestamp', 'desc') // เรียงจากใหม่ไปเก่า
+      .limit(10) // ดึงมาแค่ 10 รายการล่าสุด (ปรับได้)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(200).json([]); // ถ้าไม่มีข้อมูลเลยก็ส่ง array ว่าง
+    }
+
+    const data = snapshot.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        systolic: d.systolic,
+        diastolic: d.diastolic,
+        date: d.timestamp
+          ? d.timestamp.toDate().toLocaleString('th-TH', {
+              dateStyle: 'short',
+              timeStyle: 'short',
+            })
+          : 'ไม่ทราบเวลา',
+      };
+    });
+
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการดึงข้อมูลย้อนหลัง:', error.message);
+    res.status(500).json({ message: '❌ ไม่สามารถดึงข้อมูลจาก Firestore ได้' });
+  }
+});
+
 
 // --- สั่งให้เซิร์ฟเวอร์เริ่มทำงาน ---
 app.listen(PORT, () => {
