@@ -43,27 +43,27 @@ const ProfileSelection = ({ onSelectProfile }) => {
           <div
             key={profile.id}
             className={`flex flex-col items-center cursor-pointer transition-all duration-300 hover:scale-105 
-                      ${selectedProfileId === profile.id ? 'scale-105' : ''}`}
+              ${selectedProfileId === profile.id ? 'scale-105' : ''}`}
             onClick={() => handleProfileClick(profile.id)}
           >
             <div
               className={`w-36 h-36 sm:w-40 sm:h-40 rounded-2xl shadow-lg flex items-center justify-center text-7xl
-                          bg-gradient-to-br from-green-400 to-green-600 text-white transition-all duration-300
-                          ${
-                            selectedProfileId === profile.id
-                              ? 'ring-4 ring-green-400 shadow-2xl'
-                              : 'opacity-80 hover:opacity-100'
-                          }`}
+                      bg-gradient-to-br from-green-400 to-green-600 text-white transition-all duration-300
+                      ${
+                        selectedProfileId === profile.id
+                          ? 'ring-4 ring-green-400 shadow-2xl'
+                          : 'opacity-80 hover:opacity-100'
+                      }`}
             >
               {profile.emoji}
             </div>
             <div
               className={`mt-4 text-xl sm:text-2xl font-medium transition-colors duration-300 
-                          ${
-                            selectedProfileId === profile.id
-                              ? 'text-green-700'
-                              : 'text-gray-500'
-                          }`}
+                      ${
+                        selectedProfileId === profile.id
+                          ? 'text-green-700'
+                          : 'text-gray-500'
+                      }`}
             >
               {profile.name}
             </div>
@@ -74,11 +74,11 @@ const ProfileSelection = ({ onSelectProfile }) => {
       <button
         id="enterButton"
         className={`px-12 py-3 rounded-full text-xl font-semibold shadow-md transition-all duration-300
-                  ${
-                    selectedProfileId
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 hover:shadow-lg'
-                      : 'bg-gray-300 text-gray-400 cursor-not-allowed'
-                  }`}
+              ${
+                selectedProfileId
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:scale-105 hover:shadow-lg'
+                  : 'bg-gray-300 text-gray-400 cursor-not-allowed'
+              }`}
         onClick={handleEnterClick}
         disabled={!selectedProfileId}
       >
@@ -99,8 +99,11 @@ const Dashboard = ({ profile, onLogout }) => {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [history, setHistory] = useState([]);
 
-  const BACKEND_API_URL =
-    import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000';
+  // นี่คือส่วนที่แก้ไขแล้ว ถูกต้องครับ!
+  // We are hardcoding the production URL to fix the build warning.
+  // To use environment variables (like for local development),
+  // you may need to adjust your project's build target (e.g., in vite.config.js) to support 'import.meta'
+  const BACKEND_API_URL = 'https://pmi-project-backend.onrender.com';
 
   // ✅ โหลดข้อมูลย้อนหลัง
   useEffect(() => {
@@ -112,10 +115,19 @@ const Dashboard = ({ profile, onLogout }) => {
       const response = await fetch(
         `${BACKEND_API_URL}/api/pressures/${profile.id}`
       );
+      
+      if (!response.ok) {
+        // ถ้าเซิร์ฟเวอร์ตอบกลับมาว่าไม่ OK (เช่น 404, 500)
+        throw new Error('Server response was not ok');
+      }
+
       const data = await response.json();
-      if (response.ok) setHistory(data);
+      setHistory(data);
+
     } catch (error) {
       console.error('Error fetching history:', error);
+      // แสดงข้อผิดพลาดบนหน้าจอผู้ใช้
+      setMessage({ type: 'error', text: '❌ ไม่สามารถดึงข้อมูลย้อนหลังได้' });
     }
   };
 
@@ -145,18 +157,22 @@ const Dashboard = ({ profile, onLogout }) => {
         setMessage({ type: 'success', text: '✅ บันทึกข้อมูลสำเร็จ!' });
         setSystolic('');
         setDiastolic('');
-        setHistory((prev) => [data.newEntry, ...prev]);
+        // เพิ่มข้อมูลใหม่เข้าไปใน state โดยไม่ต้องโหลดใหม่ทั้งหน้า
+        setHistory((prev) => [data.newEntry, ...prev.filter(item => item.id !== data.newEntry.id)]); // ป้องกันการซ้ำซ้อน
       } else {
         setMessage({ type: 'error', text: data.message || '❌ เกิดข้อผิดพลาด' });
       }
-    } catch {
+    } catch (err) {
+      console.error(err);
       setMessage({ type: 'error', text: '❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้' });
     }
   };
 
   // ✅ ลบข้อมูลย้อนหลัง
   const handleDelete = async (id) => {
-    if (!confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?')) return;
+    // เปลี่ยนจาก confirm() ที่อาจถูกเบราว์เซอร์บล็อก
+    if (!window.confirm('คุณต้องการลบข้อมูลนี้ใช่หรือไม่?')) return;
+    
     try {
       const response = await fetch(`${BACKEND_API_URL}/api/pressures/${id}`, {
         method: 'DELETE',
@@ -168,13 +184,22 @@ const Dashboard = ({ profile, onLogout }) => {
       } else {
         setMessage({ type: 'error', text: '❌ ลบข้อมูลไม่สำเร็จ' });
       }
-    } catch {
+    } catch(err) {
+      console.error(err);
       setMessage({ type: 'error', text: '❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้' });
     }
   };
+  
+  // จัดการรูปแบบข้อมูลสำหรับกราฟ (ต้องเรียงจากเก่าไปใหม่)
+  const chartData = [...history].map(item => ({
+      ...item,
+      // แปลงวันที่ (ถ้าจำเป็น) แต่ recharts มักจะแสดง string ได้ดี
+      date: item.date // สมมติว่า item.date เป็น string ที่อ่านง่าย
+  })).reverse(); // .reverse() เพื่อให้กราฟแสดงจากซ้าย (เก่า) ไปขวา (ใหม่)
+
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100 pt-10 p-4">
+    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100 pt-10 p-4 font-Kanit">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl text-center">
         {/* ส่วนโปรไฟล์ */}
         <div className="text-right text-gray-600 text-sm mb-6">
@@ -209,7 +234,7 @@ const Dashboard = ({ profile, onLogout }) => {
           />
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700"
+            className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
           >
             บันทึกข้อมูล
           </button>
@@ -234,7 +259,7 @@ const Dashboard = ({ profile, onLogout }) => {
               📈 กราฟความดันย้อนหลัง
             </h2>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={[...history].reverse()}>
+              <LineChart data={chartData}> 
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis domain={[50, 200]} />
@@ -264,9 +289,9 @@ const Dashboard = ({ profile, onLogout }) => {
           </h2>
           {history.length > 0 ? (
             <ul className="space-y-2">
-              {history.map((item, index) => (
+              {history.map((item) => ( // ลบ index ออกถ้า id มีอยู่แล้ว
                 <li
-                  key={index}
+                  key={item.id} // ใช้ id ที่มาจาก database เป็น key
                   className="border rounded-lg p-2 flex justify-between items-center"
                 >
                   <div>
