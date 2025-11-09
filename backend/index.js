@@ -3,13 +3,12 @@ const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors');
 const app = express();
-
 // --- ตัวแปรสำคัญ ---
-const PORT = process.env.PORT || 5000; // แก้ไข: ลบตัวที่ซ้ำซ้อนด้านบนออก
+const PORT = process.env.PORT || 5000;
 const frontendURL = 'https://pmi-project-1.onrender.com';
 
-// --- Firebase Admin SDK Setup (แก้ไขใหม่ทั้งหมด) ---
-// อ่านค่า JSON ทั้งหมดจาก Environment Variable ที่ชื่อ "FIREBASE_SERVICE_ACCOUNT"
+// --- Firebase Admin SDK Setup (อ่านจาก Environment Variable เท่านั้น) ---
+// คาดว่า Environment Variable ชื่อ FIREBASE_SERVICE_ACCOUNT จะเก็บ JSON string ของ service account
 const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
 
 if (!serviceAccountJson) {
@@ -22,16 +21,16 @@ let db;
 try {
   // แปลง String JSON จาก Environment Variable กลับเป็น Object
   const serviceAccount = JSON.parse(serviceAccountJson);
-  
+
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
   });
 
   db = admin.firestore();
   console.log('✅ เชื่อมต่อ Firebase Firestore เรียบร้อยแล้ว');
 
 } catch (e) {
-  console.error('❌ FATAL ERROR: ไม่สามารถ parse JSON จาก FIREBASE_SERVICE_ACCOUNT', e.message);
+  console.error('❌ FATAL ERROR: ไม่สามารถ parse/initialize Firebase Admin SDK จาก FIREBASE_SERVICE_ACCOUNT', e.message);
   process.exit(1);
 }
 
