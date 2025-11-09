@@ -6,11 +6,11 @@ const cors = require('cors');
 const app = express();
 
 // --- ตัวแปรสำคัญ ---
-const PORT = process.env.PORT || 5000; // Render จะตั้ง PORT ให้เราอัตโนมัติ
-const frontendURL = 'https://pmi-project-1.onrender.com';
+const PORT = process.env.PORT || 3000; // Render จะตั้ง PORT ให้เราอัตโนมัติ
+const frontendURL = 'http://localhost:5173';
 
 
-const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-996096f856.json'); 
+const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-6d4486d712.json'); 
 
 let db;
 try {
