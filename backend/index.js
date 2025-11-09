@@ -9,9 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000; // Render จะตั้ง PORT ให้เราอัตโนมัติ
 const frontendURL = 'https://pmi-project-1.onrender.com';
 
-// --- Firebase Admin SDK Setup (วิธีที่ง่ายที่สุด) ---
-// 1. อ่านไฟล์ .json โดยตรง (อ้างอิงจากชื่อไฟล์ในรูป GitHub ของคุณ)
-// !!! สำคัญ: ตรวจสอบว่าชื่อไฟล์นี้ตรงกับใน GitHub ของคุณ !!!
+
 const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-996096f856.json'); 
 
 let db;
