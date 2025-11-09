@@ -13,7 +13,6 @@
     "express": "^5.1.0",
     "firebase-admin": "^13.6.0"
   },
-  "devDependencies": {},
   "keywords": [],
   "description": ""
 }
