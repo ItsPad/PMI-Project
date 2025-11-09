@@ -7,7 +7,7 @@ const app = express();
 
 // --- ตัวแปรสำคัญ ---
 const PORT = process.env.PORT || 3000; // Render จะตั้ง PORT ให้เราอัตโนมัติ
-const frontendURL = 'http://localhost:5173';
+const frontendURL = 'https://pmi-project-frontend.onrender.com';
 
 
 const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-6d4486d712.json'); 

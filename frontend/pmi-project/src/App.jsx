@@ -103,7 +103,7 @@
     // We are hardcoding the production URL to fix the build warning.
     // To use environment variables (like for local development),
     // you may need to adjust your project's build target (e.g., in vite.config.js) to support 'import.meta'
-    const BACKEND_API_URL = 'http://localhost:3000';
+    const BACKEND_API_URL = 'https://pmi-project.onrender.com';
 
     // ✅ โหลดข้อมูลย้อนหลัง
     useEffect(() => {
