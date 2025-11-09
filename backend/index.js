@@ -1,68 +1,63 @@
-require('dotenv').config();
+// เราไม่ต้องการ dotenv อีกต่อไป เพราะเราจะไม่อ่าน .env
+// require('dotenv').config(); 
 const express = require('express');
 const admin = require('firebase-admin');
 const cors = require('cors');
 const app = express();
+
 // --- ตัวแปรสำคัญ ---
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // Render จะตั้ง PORT ให้เราอัตโนมัติ
 const frontendURL = 'https://pmi-project-1.onrender.com';
 
-// --- Firebase Admin SDK Setup (อ่านจาก Environment Variable เท่านั้น) ---
-// คาดว่า Environment Variable ชื่อ FIREBASE_SERVICE_ACCOUNT จะเก็บ JSON string ของ service account
-const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
-
-if (!serviceAccountJson) {
-  console.error('❌ FATAL ERROR: ไม่ได้ตั้งค่า Environment Variable "FIREBASE_SERVICE_ACCOUNT"');
-  // ถ้าไม่มี Key นี้ ให้หยุดการทำงานทันที
-  process.exit(1);
-}
+// --- Firebase Admin SDK Setup (วิธีที่ง่ายที่สุด) ---
+// 1. อ่านไฟล์ .json โดยตรง (อ้างอิงจากชื่อไฟล์ในรูป GitHub ของคุณ)
+// !!! สำคัญ: ตรวจสอบว่าชื่อไฟล์นี้ตรงกับใน GitHub ของคุณ !!!
+const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-996096f856.json'); 
 
 let db;
 try {
-  // แปลง String JSON จาก Environment Variable กลับเป็น Object
-  const serviceAccount = JSON.parse(serviceAccountJson);
-
+  // 2. ใช้ serviceAccount ที่ require เข้ามาโดยตรง
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(serviceAccount)
   });
 
   db = admin.firestore();
-  console.log('✅ เชื่อมต่อ Firebase Firestore เรียบร้อยแล้ว');
+  console.log('✅ เชื่อมต่อ Firebase Firestore เรียบร้อยแล้ว (อ่านจากไฟล์โดยตรง)');
 
 } catch (e) {
-  console.error('❌ FATAL ERROR: ไม่สามารถ parse/initialize Firebase Admin SDK จาก FIREBASE_SERVICE_ACCOUNT', e.message);
+  console.error('❌ FATAL ERROR: ไม่สามารถอ่านไฟล์ service account .json', e.message);
   process.exit(1);
 }
 
 // --- Middleware ---
 app.use(express.json()); // สำหรับอ่าน JSON ใน Body
 
-// --- CORS Setup (แก้ไขใหม่) ---
-// รายการ URL ที่อนุญาตให้เชื่อมต่อ
+// --- CORS Setup ---
+// อนุญาตทั้ง localhost ตอนพัฒนา และเว็บที่ Deploy แล้ว
 const allowedOrigins = [
-  frontendURL, // URL ของ Frontend ที่ Deploy แล้ว
-  'http://localhost:5173' // URL ของ Frontend ตอนพัฒนา (Vite)
+  frontendURL, 
+  'http://localhost:5173' 
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // อนุญาตถ้า Request มาจากหนึ่งใน allowedOrigins
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('CORS policy: ไม่อนุญาตให้เชื่อมต่อจาก Origin นี้'));
     }
   },
-  methods: ['GET', 'POST', 'DELETE'], // อนุญาต Method DELETE ด้วย
+  methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type'],
 }));
 
 
 // --- API Endpoints ---
+// (โค้ดส่วน API เหมือนเดิมทุกประการ ไม่มีการเปลี่ยนแปลง)
 
 // API สำหรับเช็คสถานะ Backend
 app.get('/', (req, res) => {
-  res.send('🎉 PMI Project Backend กำลังทำงาน!');
+  res.send('🎉 PMI Project Backend กำลังทำงาน! (Easy Version)');
 });
 
 // API สำหรับบันทึกข้อมูลความดัน
@@ -77,23 +72,22 @@ app.post('/api/submit-pressure', async (req, res) => {
   }
 
   try {
-    const timestamp = new Date(); // สร้าง timestamp ทันที
+    const timestamp = new Date(); 
     
     const docRef = await db.collection('blood_pressure').add({
       userId: userId,
       systolic: systolic,
       diastolic: diastolic,
-      timestamp: timestamp // บันทึกเป็น Timestamp Object
+      timestamp: timestamp 
     });
 
     console.log(`✅ บันทึกข้อมูลของ ${userId} (ID: ${docRef.id}) เรียบร้อย`);
 
-    // (แก้ไข) สร้าง object ที่จะส่งกลับให้ Frontend (ให้ตรงกับที่ history คาดหวัง)
     const newEntry = {
       id: docRef.id,
       systolic: systolic,
       diastolic: diastolic,
-      date: timestamp.toLocaleString('th-TH', { // แปลงเป็น String ที่อ่านง่าย
+      date: timestamp.toLocaleString('th-TH', { 
         dateStyle: 'short',
         timeStyle: 'short',
       })
@@ -101,7 +95,7 @@ app.post('/api/submit-pressure', async (req, res) => {
 
     res.status(201).json({
       message: '✅ บันทึกข้อมูลเรียบร้อย!',
-      newEntry: newEntry // (แก้ไข) ส่ง newEntry กลับไปให้ Frontend ใช้ได้เลย
+      newEntry: newEntry 
     });
 
   } catch (error) {
@@ -121,12 +115,12 @@ app.get('/api/pressures/:userId', async (req, res) => {
   try {
     const snapshot = await db.collection('blood_pressure')
       .where('userId', '==', userId)
-      .orderBy('timestamp', 'desc') // เรียงจากใหม่ไปเก่า
-      .limit(10) // ดึงมาแค่ 10 รายการล่าสุด
+      .orderBy('timestamp', 'desc') 
+      .limit(10)
       .get();
 
     if (snapshot.empty) {
-      return res.status(200).json([]); // ถ้าไม่มีข้อมูลเลยก็ส่ง array ว่าง
+      return res.status(200).json([]); 
     }
 
     const data = snapshot.docs.map(doc => {
@@ -151,7 +145,7 @@ app.get('/api/pressures/:userId', async (req, res) => {
   }
 });
 
-// (ใหม่) API สำหรับลบข้อมูล
+// API สำหรับลบข้อมูล
 app.delete('/api/pressures/:id', async (req, res) => {
   const { id } = req.params;
 
