@@ -9,21 +9,28 @@ const app = express();
 const PORT = process.env.PORT || 3000; // Render จะตั้ง PORT ให้เราอัตโนมัติ
 const frontendURL = 'https://pmi-project-frontend.onrender.com';
 
-
-const serviceAccount = require('./pmi-project-39c76-firebase-adminsdk-fbsvc-6d4486d712.json'); 
-
 let db;
 try {
-  // 2. ใช้ serviceAccount ที่ require เข้ามาโดยตรง
+  // 1. ดึงค่า Key ที่เป็น String จาก Environment Variable
+  const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+  if (!serviceAccountString) {
+    throw new Error('ไม่พบ FIREBASE_SERVICE_ACCOUNT ใน Environment Variables');
+  }
+
+  // 2. แปลง String กลับเป็น Object ที่ Firebase อ่านได้
+  const serviceAccount = JSON.parse(serviceAccountString);
+
+  // 3. เชื่อมต่อ Firebase โดยใช้ Object นั้น
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
   });
 
   db = admin.firestore();
-  console.log('✅ เชื่อมต่อ Firebase Firestore เรียบร้อยแล้ว (อ่านจากไฟล์โดยตรง)');
+  console.log('✅ เชื่อมต่อ Firebase Firestore เรียบร้อยแล้ว (อ่านจาก Environment Variable)');
 
 } catch (e) {
-  console.error('❌ FATAL ERROR: ไม่สามารถอ่านไฟล์ service account .json', e.message);
+  console.error('❌ FATAL ERROR: ไม่สามารถอ่าน Service Account จาก Environment Variable', e.message);
   process.exit(1);
 }
 
