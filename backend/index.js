@@ -153,51 +153,59 @@ app.get('/api/pressures/:userId', async (req, res) => {
   }
 });
 
-//API สำหรับการทำข้อมูลเฉลี่ย7วัน
+//API สำหรับการทำข้อมูลเฉลี่ย (7 อันล่าสุด)
 app.get('/api/stats/:userId', async (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.params;
 
-  if (!userId || typeof userId !== 'string') {
-    return res.status(400).json({ message: '⚠️ กรุณาระบุ userId ให้ถูกต้อง' });
-  }
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ message: '⚠️ กรุณาระบุ userId ให้ถูกต้อง' });
+  }
 
-  try {
-    // 1. คำนวณวันที่ 7 วันก่อน
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    sevenDaysAgo.setHours(0, 0, 0, 0); // 👈 เริ่มนับจากเที่ยงคืนของ 7 วันก่อน
+  try {
+    // --- 1. [แก้ไข] ลบการคำนวณ 7 วันที่แล้ว ---
+    // const sevenDaysAgo = new Date();
+    // sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    // sevenDaysAgo.setHours(0, 0, 0, 0); 
 
-    // 2. Query ข้อมูลทั้งหมดใน 7 วันที่ผ่านมา
-    const snapshot = await db.collection('blood_pressure')
-      .where('userId', '==', userId)
-      .where('timestamp', '>=', sevenDaysAgo) // 👈 ดึงเฉพาะข้อมูลที่ใหม่กว่า 7 วันที่แล้ว
-      .get();
+    // --- 2. [แก้ไข] Query 7 รายการล่าสุดแทน ---
+    const snapshot = await db.collection('blood_pressure')
+      .where('userId', '==', userId)
+      .orderBy('timestamp', 'desc') // 👈 เรียงจากใหม่ไปเก่า
+      .limit(7)                     // 👈 เอาแค่ 7 อัน
+      .get();
 
-    if (snapshot.empty) {
-      // ไม่มีข้อมูลใน 7 วัน
-      return res.status(200).json({ avgSys: 0, avgDia: 0, count: 0 });
-    }
+    if (snapshot.empty) {
+      // ไม่มีข้อมูลเลย
+      return res.status(200).json({ avgSys: 0, avgDia: 0, count: 0 });
+    }
 
-    // 3. คำนวณค่าเฉลี่ย
-    let totalSys = 0;
-    let totalDia = 0;
-    const count = snapshot.docs.length;
+    // --- 3. การคำนวณค่าเฉลี่ย (ส่วนนี้ใช้โลจิกเดิมได้เลย) ---
+    let totalSys = 0;
+    let totalDia = 0;
+    const count = snapshot.docs.length; // (จะได้ค่าน้อยกว่าหรือเท่ากับ 7)
 
-    snapshot.docs.forEach(doc => {
-      totalSys += doc.data().systolic;
-      totalDia += doc.data().diastolic;
-    });
+    snapshot.docs.forEach(doc => {
+      totalSys += doc.data().systolic;
+      totalDia += doc.data().diastolic;
+    });
 
-    const avgSys = count > 0 ? Math.round(totalSys / count) : 0;
-    const avgDia = count > 0 ? Math.round(totalDia / count) : 0;
+    const avgSys = count > 0 ? Math.round(totalSys / count) : 0;
+    const avgDia = count > 0 ? Math.round(totalDia / count) : 0;
 
-    // 4. ส่งค่าเฉลี่ยกลับไป
-    res.status(200).json({ avgSys, avgDia, count });
+    // 4. ส่งค่าเฉลี่ยกลับไป
+    res.status(200).json({ avgSys, avgDia, count });
 
-  } catch (error) {
-    console.error('❌ เกิดข้อผิดพลาดในการคำนวณสถิติ:', error.message);
-    res.status(500).json({ message: '❌ ไม่สามารถดึงข้อมูลสถิติได้' });
-  }
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการคำนวณสถิติ:', error.message);
+    
+    // (หมายเหตุ: Query นี้ (where + orderBy) อาจต้องการ Index ใน Firestore)
+    // (แต่ API /api/pressures/:userId ของคุณก็ใช้อันเดียวกัน)
+    // (ดังนั้นมันควรจะทำงานได้เลย)
+    if (error.message.includes('index')) {
+      console.error('🔥 HINT: คุณอาจจะต้องสร้าง Composite Index ใน Firestore! (สำหรับ userId (asc), timestamp (desc))');
+    }
+    res.status(500).json({ message: '❌ ไม่สามารถดึงข้อมูลสถิติได้' });
+  }
 });
 
 // API สำหรับลบข้อมูล
