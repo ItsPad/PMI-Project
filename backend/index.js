@@ -77,9 +77,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type'],
 }));
 
-// --- 👈 [ลบ] ฟังก์ชัน sendLineNotify ---
-// (ลบฟังก์ชันของ LINE ทิ้งไป)
-
 // --- 👈 [ใหม่] ฟังก์ชันสำหรับส่ง Discord Webhook ---
 const sendDiscordNotify = async (userName, systolic, diastolic, feeling) => {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
