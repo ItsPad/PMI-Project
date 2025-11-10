@@ -294,7 +294,7 @@ const Dashboard = ({ profile, onLogout }) => {
 
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen bg-gray-100 pt-10 p-4 font-Kanit">
+    <div className="flex flex-col items-center justify-start min-h-screen pt-10 p-4 font-Kanit bg-gradient-to-b from-green-100 via-white to-green-50">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl text-center">
         {/* ส่วนโปรไฟล์ */}
         <div className="text-right text-gray-600 text-sm mb-6">
