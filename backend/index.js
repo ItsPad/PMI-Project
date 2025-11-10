@@ -67,7 +67,7 @@ app.get('/', (req, res) => {
 
 // API สำหรับบันทึกข้อมูลความดัน
 app.post('/api/submit-pressure', async (req, res) => {
-  const { systolic, diastolic, userId } = req.body;
+  const { systolic, diastolic, userId, feeling } = req.body;
 
   if (!userId || typeof userId !== 'string') {
     return res.status(400).json({ message: '⚠️ กรุณาระบุ userId' });
@@ -83,8 +83,9 @@ app.post('/api/submit-pressure', async (req, res) => {
       userId: userId,
       systolic: systolic,
       diastolic: diastolic,
+      feeling: feeling,
       timestamp: timestamp 
-    });
+    }); 
 
     console.log(`✅ บันทึกข้อมูลของ ${userId} (ID: ${docRef.id}) เรียบร้อย`);
 
@@ -92,6 +93,7 @@ app.post('/api/submit-pressure', async (req, res) => {
       id: docRef.id,
       systolic: systolic,
       diastolic: diastolic,
+      feeling: feeling,
       date: timestamp.toLocaleString('th-TH', { 
         dateStyle: 'short',
         timeStyle: 'short',
@@ -134,6 +136,7 @@ app.get('/api/pressures/:userId', async (req, res) => {
         id: doc.id,
         systolic: d.systolic,
         diastolic: d.diastolic,
+        feeling: d.feeling,
         date: d.timestamp
           ? d.timestamp.toDate().toLocaleString('th-TH', {
               dateStyle: 'short',
@@ -147,6 +150,53 @@ app.get('/api/pressures/:userId', async (req, res) => {
   } catch (error) {
     console.error('❌ เกิดข้อผิดพลาดในการดึงข้อมูลย้อนหลัง:', error.message);
     res.status(500).json({ message: '❌ ไม่สามารถดึงข้อมูลจาก Firestore ได้' });
+  }
+});
+
+//API สำหรับการทำข้อมูลเฉลี่ย7วัน
+app.get('/api/stats/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ message: '⚠️ กรุณาระบุ userId ให้ถูกต้อง' });
+  }
+
+  try {
+    // 1. คำนวณวันที่ 7 วันก่อน
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setHours(0, 0, 0, 0); // 👈 เริ่มนับจากเที่ยงคืนของ 7 วันก่อน
+
+    // 2. Query ข้อมูลทั้งหมดใน 7 วันที่ผ่านมา
+    const snapshot = await db.collection('blood_pressure')
+      .where('userId', '==', userId)
+      .where('timestamp', '>=', sevenDaysAgo) // 👈 ดึงเฉพาะข้อมูลที่ใหม่กว่า 7 วันที่แล้ว
+      .get();
+
+    if (snapshot.empty) {
+      // ไม่มีข้อมูลใน 7 วัน
+      return res.status(200).json({ avgSys: 0, avgDia: 0, count: 0 });
+    }
+
+    // 3. คำนวณค่าเฉลี่ย
+    let totalSys = 0;
+    let totalDia = 0;
+    const count = snapshot.docs.length;
+
+    snapshot.docs.forEach(doc => {
+      totalSys += doc.data().systolic;
+      totalDia += doc.data().diastolic;
+    });
+
+    const avgSys = count > 0 ? Math.round(totalSys / count) : 0;
+    const avgDia = count > 0 ? Math.round(totalDia / count) : 0;
+
+    // 4. ส่งค่าเฉลี่ยกลับไป
+    res.status(200).json({ avgSys, avgDia, count });
+
+  } catch (error) {
+    console.error('❌ เกิดข้อผิดพลาดในการคำนวณสถิติ:', error.message);
+    res.status(500).json({ message: '❌ ไม่สามารถดึงข้อมูลสถิติได้' });
   }
 });
 
