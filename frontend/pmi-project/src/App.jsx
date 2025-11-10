@@ -13,10 +13,10 @@
   // --- Component สำหรับหน้าเลือกโปรไฟล์ ---
   const ProfileSelection = ({ onSelectProfile }) => {
     const profiles = [
-      { id: 'Pad', name: 'คุณปัด', emoji: '🌟' },
-      { id: 'Pong', name: 'คุณป้อง', emoji: '🐶' },
-      { id: 'Manun', name: 'คุณมนูญ', emoji: '👴' },
-      { id: 'Nuch', name: 'คุณนุช', emoji: '👵' },
+      { id: 'Pad', name: 'คุณปัด', emoji: '⛄' },
+      { id: 'Pong', name: 'คุณป้อง', emoji: '⚡' },
+      { id: 'Manun', name: 'คุณมนูญ', emoji: '🍵' },
+      { id: 'Nuch', name: 'คุณนุช', emoji: '🧣' },
     ];
 
     const [selectedProfileId, setSelectedProfileId] = useState(null);
@@ -212,7 +212,6 @@
               เปลี่ยนโปรไฟล์
             </a>)
           </div>
-
           <h1 className="text-3xl font-semibold text-green-600 mb-6">
             🩺 บันทึกความดันโลหิต
           </h1>
@@ -224,18 +223,18 @@
               value={systolic}
               onChange={(e) => setSystolic(e.target.value)}
               className="w-full p-3 border rounded-lg"
-            />
+              />
             <input
               type="number"
               placeholder="ตัวล่าง (Diastolic)"
               value={diastolic}
               onChange={(e) => setDiastolic(e.target.value)}
               className="w-full p-3 border rounded-lg"
-            />
+              />
             <button
               type="submit"
               className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors"
-            >
+              >
               บันทึกข้อมูล
             </button>
           </form>
