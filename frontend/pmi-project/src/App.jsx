@@ -10,7 +10,57 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// --- Component สำหรับหน้าเลือกโปรไฟล์ ---
+// --- 👇 [ใหม่] Component สำหรับแสดงผลตอน Backend กำลังตื่น ---
+const BackendLoadingScreen = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen bg-white text-gray-800 p-4 font-Kanit">
+    {/* SVG Spinner (หมุนๆ) */}
+    <svg
+      className="animate-spin h-10 w-10 text-green-600 mb-4"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
+    </svg>
+    <h1 className="text-2xl font-semibold text-green-700">
+      กำลังเชื่อมต่อเซิร์ฟเวอร์...
+    </h1>
+    <p className="text-gray-500 mt-2 text-center">
+      (หากเข้าใช้งานครั้งแรก เซิร์ฟเวอร์อาจใช้เวลาปลุกตัว 30 วินาที ☕)
+    </p>
+  </div>
+);
+
+// --- 👇 [ใหม่] Component สำหรับแสดงผลตอน Backend เชื่อมต่อล่ม ---
+const BackendErrorScreen = ({ onRetry }) => (
+  <div className="flex flex-col items-center justify-center min-h-screen bg-red-50 text-red-700 p-4 font-Kanit">
+    <h1 className="text-2xl font-semibold mb-2">❌ เชื่อมต่อเซิร์fเวอร์ไม่สำเร็จ</h1>
+    <p className="text-gray-600 mt-2 mb-6 text-center">
+      ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ Backend ได้ กรุณาตรวจสอบอินเทอร์เน็ต
+    </p>
+    <button
+      onClick={onRetry}
+      className="px-8 py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
+    >
+      ลองอีกครั้ง
+    </button>
+  </div>
+);
+
+
+// --- Component สำหรับหน้าเลือกโปรไฟล์ (เหมือนเดิม) ---
 const ProfileSelection = ({ onSelectProfile }) => {
   const profiles = [
     { id: "Pad", name: "คุณปัด", emoji: "⛄" },
@@ -92,12 +142,12 @@ const ProfileSelection = ({ onSelectProfile }) => {
   );
 };
 
-// --- 👇 [ใหม่] Component ย่อยสำหรับแสดงผลสถิติ ---
+// --- Component ย่อยสำหรับแสดงผลสถิติ (เหมือนเดิม) ---
 const StatsDisplay = ({ stats, isLoading }) => {
   if (isLoading) {
     return (
       <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
-        <p className="text-gray-500">กำลังคำนวณค่าเฉลี่ย 7 วัน...</p>
+        <p className="text-gray-500">กำลังคำนวณค่าเฉลี่ย 7 ครั้งล่าสุด...</p>
       </div>
     );
   }
@@ -106,7 +156,7 @@ const StatsDisplay = ({ stats, isLoading }) => {
     return (
       <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
         <p className="text-gray-500">
-          ยังไม่มีข้อมูลสำหรับคำนวณค่าเฉลี่ย 7 วัน
+          ยังไม่มีข้อมูลสำหรับคำนวณค่าเฉลี่ย
         </p>
       </div>
     );
@@ -121,7 +171,7 @@ const StatsDisplay = ({ stats, isLoading }) => {
   return (
     <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
       <h2 className="text-lg font-semibold text-gray-700 mb-2">
-        ค่าเฉลี่ย 7 วันที่ผ่านมา ({stats.count} ครั้ง)
+        ค่าเฉลี่ย {stats.count} ครั้งล่าสุด
       </h2>
       <p className="text-3xl font-bold text-gray-800">
         {stats.avgSys} / {stats.avgDia}{" "}
@@ -134,7 +184,7 @@ const StatsDisplay = ({ stats, isLoading }) => {
   );
 };
 
-// --- 👇 [ใหม่] ฟังก์ชันประเมินความดัน ---
+// --- ฟังก์ชันประเมินความดัน (เหมือนเดิม) ---
 const getPressureAssessment = (sys, dia) => {
   if (sys === 0 || dia === 0) return "";
   if (sys < 90 || dia < 60) return "ความดันต่ำ";
@@ -144,16 +194,15 @@ const getPressureAssessment = (sys, dia) => {
   return "ปกติ";
 };
 
-// --- Dashboard เวอร์ชันใหม่ ---
+// --- Dashboard (เหมือนเดิม) ---
 const Dashboard = ({ profile, onLogout }) => {
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
-  const [feeling, setFeeling] = useState(""); // 👈 เพิ่ม state สำหรับ feeling
+  const [feeling, setFeeling] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 👈 เพิ่ม state สำหรับสถิติ
   const [stats, setStats] = useState({
     avgSys: 0,
     avgDia: 0,
@@ -162,9 +211,9 @@ const Dashboard = ({ profile, onLogout }) => {
   });
   const [isStatsLoading, setIsStatsLoading] = useState(true);
 
-  const BACKEND_API_URL = "https://pmi-project.onrender.com"; // 👈 URL ของ Backend ที่ Deploy
+  // ❗️ เราต้องนิยาม URL นี้ใน Dashboard ด้วย
+  const BACKEND_API_URL = "https://pmi-project.onrender.com"; 
 
-  // ✅ [ใหม่] ฟังก์ชันสำหรับดึงสถิติ
   const fetchStats = async () => {
     setIsStatsLoading(true);
     try {
@@ -184,16 +233,14 @@ const Dashboard = ({ profile, onLogout }) => {
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
-      // ถ้าโหลดสถิติล่ม ก็ไม่เป็นไร ไม่ต้องโชว์ Error
     } finally {
       setIsStatsLoading(false);
     }
   };
 
-  // ✅ โหลดข้อมูลย้อนหลัง
   useEffect(() => {
     fetchHistory();
-    fetchStats(); // 👈 โหลดสถิติด้วย
+    fetchStats(); 
   }, [profile.id]);
 
   const fetchHistory = async () => {
@@ -228,13 +275,11 @@ const Dashboard = ({ profile, onLogout }) => {
     }
   };
 
-  // ✅ บันทึกข้อมูลใหม่
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMessage({ type: "", text: "" });
 
     if (!systolic || !diastolic) {
-      // 👈 ไม่บังคับให้กรอก feeling
       setMessage({ type: "error", text: "⚠️ กรุณากรอกค่าความดันให้ครบ" });
       return;
     }
@@ -247,7 +292,7 @@ const Dashboard = ({ profile, onLogout }) => {
           userId: profile.id,
           systolic: parseInt(systolic),
           diastolic: parseInt(diastolic),
-          feeling: feeling || null, // 👈 ส่ง feeling ไปด้วย
+          feeling: feeling || null,
         }),
       });
 
@@ -256,14 +301,13 @@ const Dashboard = ({ profile, onLogout }) => {
         setMessage({ type: "success", text: "✅ บันทึกข้อมูลสำเร็จ!" });
         setSystolic("");
         setDiastolic("");
-        setFeeling(""); // 👈 เคลียร์ feeling
+        setFeeling(""); 
 
-        // เพิ่มข้อมูลใหม่เข้าไปใน state
         setHistory((prev) => [
           data.newEntry,
           ...prev.filter((item) => item.id !== data.newEntry.id),
         ]);
-        fetchStats(); // 👈 อัปเดตสถิติใหม่
+        fetchStats(); 
       } else {
         setMessage({
           type: "error",
@@ -279,7 +323,6 @@ const Dashboard = ({ profile, onLogout }) => {
     }
   };
 
-  // ✅ ลบข้อมูลย้อนหลัง
   const handleDelete = async (id) => {
     if (!window.confirm("คุณต้องการลบข้อมูลนี้ใช่หรือไม่?")) return;
 
@@ -291,7 +334,7 @@ const Dashboard = ({ profile, onLogout }) => {
       if (response.ok) {
         setHistory((prev) => prev.filter((item) => item.id !== id));
         setMessage({ type: "success", text: "🗑️ ลบข้อมูลเรียบร้อยแล้ว" });
-        fetchStats(); // 👈 อัปเดตสถิติใหม่
+        fetchStats(); 
       } else {
         setMessage({ type: "error", text: "❌ ลบข้อมูลไม่สำเร็จ" });
       }
@@ -304,7 +347,6 @@ const Dashboard = ({ profile, onLogout }) => {
     }
   };
 
-  // จัดการรูปแบบข้อมูลสำหรับกราฟ (ต้องเรียงจากเก่าไปใหม่)
   const chartData = [...history]
     .map((item) => ({
       ...item,
@@ -332,14 +374,13 @@ const Dashboard = ({ profile, onLogout }) => {
           🩺 บันทึกความดันโลหิต
         </h1>
 
-        {/* --- 👇 [ใหม่] แสดงผลสถิติ --- */}
+        {/* --- แสดงผลสถิติ --- */}
         <StatsDisplay stats={stats} isLoading={isStatsLoading} />
 
         {/* แสดง "กำลังโหลด..." */}
         {isLoading && (
           <div className="mt-6 p-3 rounded-lg bg-blue-100 text-blue-700">
-            กำลังโหลดข้อมูลจากเซิร์ฟเวอร์ กรุณารอสักครู่ใช้เวลาประมาณ 30
-            วินาที... 🔄
+            กำลังโหลดข้อมูลย้อนหลัง... 🔄
           </div>
         )}
 
@@ -359,7 +400,6 @@ const Dashboard = ({ profile, onLogout }) => {
             className="w-full p-3 border rounded-lg"
           />
 
-          {/* --- 👇 [ใหม่] Dropdown ความรู้สึก --- */}
           <select
             value={feeling}
             onChange={(e) => setFeeling(e.target.value)}
@@ -442,7 +482,6 @@ const Dashboard = ({ profile, onLogout }) => {
                     <span className="font-medium ml-3">
                       {item.systolic}/{item.diastolic} mmHg
                     </span>
-                    {/* --- 👇 [ใหม่] แสดง feeling --- */}
                     {item.feeling && (
                       <span className="text-sm text-gray-500 ml-2 italic">
                         ({item.feeling})
@@ -470,12 +509,45 @@ const Dashboard = ({ profile, onLogout }) => {
   );
 };
 
-// --- App หลัก ---
+
+// --- 👇 [แก้ไข] App หลัก ---
 function App() {
   const [loggedInProfile, setLoggedInProfile] = useState(null);
+  
+  // 1. 👈 เพิ่ม State ใหม่สำหรับเช็ก Backend
+  const [backendStatus, setBackendStatus] = useState("checking"); // 'checking', 'ready', 'error'
+  
+  // 2. 👈 ย้าย URL มาไว้ที่นี่
+  const BACKEND_API_URL = "https://pmi-project.onrender.com";
 
+  // 3. 👈 ฟังก์ชันสำหรับ "Ping" (ปลุก) Backend
+  const checkBackendStatus = async () => {
+    setBackendStatus("checking");
+    console.log("Pinging backend to wake up...");
+    try {
+      // เราจะยิงไปที่ API root (/) ซึ่งเบาที่สุด
+      const response = await fetch(BACKEND_API_URL + "/"); 
+      if (!response.ok) {
+        // ถ้าเซิร์ฟเวอร์ตอบมาว่าไม่ OK (เช่น 500)
+        throw new Error("Backend not healthy");
+      }
+      // ถ้า OK (200) แสดงว่า Backend ตื่นแล้ว
+      console.log("Backend is awake!");
+      setBackendStatus("ready");
+
+    } catch (err) {
+      console.error("Backend check failed:", err);
+      setBackendStatus("error");
+    }
+  };
+
+  // 4. 👈 เรียกเช็ก Backend ทันทีที่เปิดแอป
   useEffect(() => {
-    // 💡 ใช้ JSON.parse เพื่อความสะอาด
+    checkBackendStatus();
+  }, []);
+
+  // 5. 👈 โหลดโปรไฟล์ (ทำไปพร้อมๆ กันได้)
+  useEffect(() => {
     const storedProfileString = localStorage.getItem("pmiProfile");
     if (storedProfileString) {
       try {
@@ -488,7 +560,6 @@ function App() {
 
   const handleSelectProfile = (profile) => {
     setLoggedInProfile(profile);
-    // 💡 เก็บเป็น JSON ก้อนเดียว
     localStorage.setItem("pmiProfile", JSON.stringify(profile));
   };
 
@@ -498,6 +569,19 @@ function App() {
     localStorage.removeItem("pmiProfile");
   };
 
+  // --- 👇 [ใหม่] Logic การแสดงผลหลัก ---
+
+  // 6. 👈 ถ้ากำลังเช็ก Backend ให้แสดงหน้า Loading
+  if (backendStatus === "checking") {
+    return <BackendLoadingScreen />;
+  }
+
+  // 7. 👈 ถ้า Backend ล่ม ให้แสดงหน้า Error
+  if (backendStatus === "error") {
+    return <BackendErrorScreen onRetry={checkBackendStatus} />;
+  }
+
+  // 8. 👈 ถ้า Backend พร้อม (ready) ค่อยแสดงแอปปกติ
   return (
     <>
       {loggedInProfile ? (
