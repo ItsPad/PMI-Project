@@ -10,160 +10,147 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// --- 🎨 Global Styles & Animations ---
+// --- 🎆 Global Styles & Animations ---
 const GlobalStyles = () => (
   <style>{`
     @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap');
     
     .font-Kanit { font-family: 'Kanit', sans-serif; }
     
-    @keyframes snow {
-      0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
-      20% { opacity: 1; }
-      100% { transform: translateY(110vh) translateX(20px) rotate(360deg); opacity: 0.3; }
+    /* Animation: Confetti (กระดาษโปรย) */
+    @keyframes confetti-fall {
+      0% { transform: translateY(-10vh) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg) scale(0.5); opacity: 0; }
     }
     
-    @keyframes twinkle {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
+    /* Animation: Glow (แสงวูบวาบ) */
+    @keyframes gold-glow {
+      0%, 100% { box-shadow: 0 0 10px #fbbf24, 0 0 20px #d97706; }
+      50% { box-shadow: 0 0 20px #fcd34d, 0 0 40px #b45309; }
     }
 
-    .animate-snow {
-      animation-name: snow;
+    @keyframes text-shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .animate-confetti {
+      animation-name: confetti-fall;
       animation-timing-function: linear;
       animation-iteration-count: infinite;
     }
 
-    .animate-twinkle {
-      animation: twinkle 2s infinite ease-in-out;
+    .text-gradient-gold {
+      background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      background-size: 200% auto;
+      animation: text-shimmer 3s linear infinite;
     }
 
-    /* Pattern ไม้เท้ากวาด (Candy Cane) */
-    .bg-candy-cane {
-      background: repeating-linear-gradient(
-        45deg,
-        #ef4444,
-        #ef4444 10px,
-        #ffffff 10px,
-        #ffffff 20px
-      );
+    .bg-midnight-sky {
+      background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
     }
-    
-    .bg-holly {
-      background-color: #f0fdf4;
-      background-image: radial-gradient(#dc2626 1px, transparent 1px), radial-gradient(#16a34a 1px, transparent 1px);
+
+    .bg-gold-pattern {
+      background-color: #ffffff;
+      background-image: radial-gradient(#fbbf24 0.5px, transparent 0.5px), radial-gradient(#fbbf24 0.5px, #ffffff 0.5px);
       background-size: 20px 20px;
       background-position: 0 0, 10px 10px;
-    }
-
-    /* หิมะเกาะบนกล่อง (Snow Cap) */
-    .snow-cap::before {
-      content: '';
-      position: absolute;
-      top: -10px;
-      left: 0;
-      right: 0;
-      height: 20px;
-      background: white;
-      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      z-index: 0;
+      opacity: 0.1;
     }
   `}</style>
 );
 
-// --- ❄️ Component: หิมะตก ---
-const SnowOverlay = ({ count = 30 }) => (
-  <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-    {[...Array(count)].map((_, i) => (
-      <div
-        key={i}
-        className="absolute bg-white rounded-full opacity-60 animate-snow"
-        style={{
-          width: `${Math.random() * 6 + 4}px`,
-          height: `${Math.random() * 6 + 4}px`,
-          left: `${Math.random() * 100}%`,
-          top: `-20px`,
-          animationDuration: `${Math.random() * 5 + 5}s`,
-          animationDelay: `${Math.random() * 5}s`,
-          filter: 'blur(1px)',
-        }}
-      ></div>
-    ))}
+// --- 🎉 Component: Confetti (กระดาษโปรยหลากสี) ---
+const ConfettiOverlay = ({ count = 40 }) => {
+  const colors = ['#FFD700', '#C0C0C0', '#FF69B4', '#00BFFF', '#FF4500']; // Gold, Silver, Pink, Blue, Red
+  return (
+    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      {[...Array(count)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute rounded-sm animate-confetti"
+          style={{
+            width: `${Math.random() * 8 + 4}px`,
+            height: `${Math.random() * 10 + 5}px`,
+            backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+            left: `${Math.random() * 100}%`,
+            top: `-20px`,
+            animationDuration: `${Math.random() * 3 + 4}s`,
+            animationDelay: `${Math.random() * 5}s`,
+            opacity: 0.8,
+          }}
+        ></div>
+      ))}
+    </div>
+  );
+};
+
+// --- ✨ Component: 2026 Header Decoration ---
+const NewYearHeader = () => (
+  <div className="absolute top-0 left-0 w-full z-10 flex justify-center overflow-hidden py-4">
+    <div className="text-4xl md:text-6xl font-bold tracking-widest opacity-10 select-none text-white animate-pulse">
+      2026 • 2026 • 2026
+    </div>
   </div>
 );
 
-// --- 💡 Component: ไฟประดับ ---
-const ChristmasLights = () => (
-  <div className="flex justify-center gap-4 mb-4 overflow-hidden py-2 absolute top-0 left-0 w-full z-10">
-    {[...Array(12)].map((_, i) => (
-      <div
-        key={i}
-        className={`w-4 h-4 rounded-full shadow-lg animate-twinkle ${
-          i % 3 === 0 ? "bg-red-500 shadow-red-500/50" : 
-          i % 3 === 1 ? "bg-green-500 shadow-green-500/50" : "bg-yellow-400 shadow-yellow-400/50"
-        }`}
-        style={{ animationDelay: `${i * 0.2}s` }}
-      ></div>
-    ))}
-  </div>
-);
-
-// --- 👇 BackendLoadingScreen (ธีมคริสต์มาส) ---
+// --- 👇 BackendLoadingScreen (ธีมปีใหม่) ---
 const BackendLoadingScreen = () => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-red-50 text-gray-800 p-4 font-Kanit relative overflow-hidden">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-midnight-sky text-white p-4 font-Kanit relative overflow-hidden">
     <GlobalStyles />
-    <SnowOverlay count={40} />
+    <ConfettiOverlay count={50} />
     
-    <div className="relative z-10 text-center p-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border-4 border-green-200">
+    <div className="relative z-10 text-center p-10 bg-black/40 backdrop-blur-md rounded-3xl shadow-2xl border border-yellow-500/30">
       <div className="mb-6 relative">
-         <div className="text-6xl animate-bounce">🎅</div>
-         <div className="absolute -right-2 top-0 text-4xl animate-pulse">✨</div>
+          <div className="text-7xl animate-bounce">🎇</div>
       </div>
       
-      {/* Loading Spinner แบบวงกลมสีสลับ */}
-      <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 border-b-green-600 rounded-full animate-spin mx-auto mb-4"></div>
+      {/* Loading Spinner แบบวงกลมทอง */}
+      <div className="w-16 h-16 border-4 border-yellow-200/20 border-t-yellow-400 rounded-full animate-spin mx-auto mb-6"></div>
 
-      <h1 className="text-2xl font-bold text-red-700">
-        กำลังปลุกคุณลุงซานต้า...
+      <h1 className="text-3xl font-bold text-gradient-gold mb-2">
+        กำลังนับถอยหลัง...
       </h1>
-      <p className="text-green-800 mt-2 font-medium">
-        (กวางเรนเดียร์กำลังวิ่งไปที่เซิร์ฟเวอร์ 🦌💨)
+      <p className="text-gray-300 font-light tracking-wide">
+        Connecting to 2026 Server... 🚀
       </p>
     </div>
   </div>
 );
 
-// --- 👇 BackendErrorScreen (ธีมคริสต์มาส) ---
+// --- 👇 BackendErrorScreen (ธีมปีใหม่) ---
 const BackendErrorScreen = ({ onRetry }) => (
-  <div className="flex flex-col items-center justify-center min-h-screen bg-red-100 text-red-800 p-4 font-Kanit relative overflow-hidden">
+  <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4 font-Kanit relative overflow-hidden">
     <GlobalStyles />
-    <SnowOverlay />
+    <ConfettiOverlay />
     
-    <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md border-4 border-red-200 z-10">
-        <div className="text-6xl mb-4">🥶</div>
-        <h1 className="text-3xl font-bold mb-2 text-red-600">อุ๊ย! หนาวเกินไป</h1>
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">การเชื่อมต่อแข็งตัว</h2>
-        <p className="text-gray-600 mb-6">
-          ดูเหมือนของขวัญจะส่งไม่ถึงเซิร์ฟเวอร์ ลองตรวจสอบอินเทอร์เน็ตดูนะ
+    <div className="bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl text-center max-w-md border border-red-500/50 z-10">
+        <div className="text-6xl mb-4">😵‍💫</div>
+        <h1 className="text-2xl font-bold mb-2 text-red-400">สัญญาณแฮงค์!</h1>
+        <h2 className="text-lg font-semibold mb-4 text-gray-300">การเชื่อมต่อสะดุด</h2>
+        <p className="text-gray-400 mb-6 font-light">
+          ดูเหมือนเครือข่ายจะฉลองหนักไปหน่อย ลองเชื่อมต่อใหม่อีกครั้งนะ
         </p>
         <button
           onClick={onRetry}
-          className="px-8 py-3 bg-gradient-to-r from-green-500 to-green-700 text-white rounded-full font-bold hover:scale-105 transition-transform shadow-lg ring-4 ring-green-200"
+          className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-700 text-black rounded-full font-bold hover:scale-105 transition-transform shadow-[0_0_20px_rgba(234,179,8,0.5)]"
         >
-          🎁 ลองส่งใหม่อีกครั้ง
+          🎆 ลองใหม่อีกครั้ง
         </button>
     </div>
   </div>
 );
 
-// --- Component สำหรับหน้าเลือกโปรไฟล์ (ธีมคริสต์มาส) ---
+// --- Component สำหรับหน้าเลือกโปรไฟล์ (ธีมปีใหม่) ---
 const ProfileSelection = ({ onSelectProfile }) => {
   const profiles = [
-    { id: "Pad", name: "คุณปัด", emoji: "🎅", role: "Santa" },
-    { id: "Pong", name: "คุณป้อง", emoji: "🦌", role: "Reindeer" },
-    { id: "Manun", name: "คุณมนูญ", emoji: "⛄", role: "Snowman" },
-    { id: "Nuch", name: "คุณนุช", emoji: "🤶", role: "Mrs. Claus" },
+    { id: "Pad", name: "คุณปัด", emoji: "😎", role: "Party Starter" },
+    { id: "Pong", name: "คุณป้อง", emoji: "🍾", role: "Champagne Popped" },
+    { id: "Manun", name: "คุณมนูญ", emoji: "🎆", role: "Firework Master" },
+    { id: "Nuch", name: "คุณนุช", emoji: "💃", role: "Dancing Queen" },
   ];
 
   const [selectedProfileId, setSelectedProfileId] = useState(null);
@@ -180,16 +167,18 @@ const ProfileSelection = ({ onSelectProfile }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-red-50 via-white to-green-50 text-gray-800 p-4 font-Kanit relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-midnight-sky text-white p-4 font-Kanit relative overflow-hidden">
       <GlobalStyles />
-      <SnowOverlay count={50} />
-      <ChristmasLights />
+      <ConfettiOverlay count={60} />
+      <NewYearHeader />
 
-      <h1 className="text-4xl sm:text-6xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-green-600 tracking-wide relative z-10 drop-shadow-sm mt-10 text-center">
-       MERRY CHRISTMAS
+      <h1 className="text-5xl sm:text-7xl font-bold mb-2 text-gradient-gold tracking-tighter relative z-10 mt-10 text-center drop-shadow-lg">
+       HAPPY NEW YEAR
       </h1>
-      <h2 className="text-xl sm:text-2xl font-bold mb-10 text-gray-600 relative z-10">
-        🎁 ใครกำลังใช้งานวันนี้?
+      <div className="text-4xl font-bold text-yellow-500/80 mb-8 tracking-[0.5em] z-10">2026</div>
+
+      <h2 className="text-xl font-light mb-10 text-gray-300 relative z-10 flex items-center gap-2">
+        <span>🥂</span> ใครพร้อมจะสุขภาพดีในปีใหม่?
       </h2>
 
       <div className="flex flex-wrap justify-center gap-6 mb-12 relative z-10">
@@ -197,32 +186,34 @@ const ProfileSelection = ({ onSelectProfile }) => {
           <div
             key={profile.id}
             className={`flex flex-col items-center cursor-pointer transition-all duration-300 transform group
-              ${selectedProfileId === profile.id ? "scale-110 -translate-y-2" : "hover:scale-105"}`}
+              ${selectedProfileId === profile.id ? "scale-110 -translate-y-4" : "hover:scale-105"}`}
             onClick={() => handleProfileClick(profile.id)}
           >
             <div className="relative">
-                {/* Snow Cap on Avatar */}
-                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 bg-white rounded-t-full opacity-90 z-20 ${selectedProfileId === profile.id ? 'block' : 'hidden group-hover:block'}`}></div>
+                {/* Crown for selected */}
+                {selectedProfileId === profile.id && (
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-4xl animate-bounce z-20">👑</div>
+                )}
                 
                 <div
-                className={`w-32 h-32 sm:w-36 sm:h-36 rounded-full shadow-lg flex items-center justify-center text-6xl relative z-10 border-4
-                        transition-all duration-300 overflow-hidden
+                className={`w-32 h-32 sm:w-36 sm:h-36 rounded-full flex items-center justify-center text-6xl relative z-10 border-4 backdrop-blur-sm
+                        transition-all duration-300 overflow-hidden shadow-2xl
                         ${
                             selectedProfileId === profile.id
-                            ? "border-red-500 bg-red-50 shadow-red-200 shadow-2xl"
-                            : "border-white bg-white hover:border-green-300"
+                            ? "border-yellow-400 bg-yellow-400/20 shadow-[0_0_30px_rgba(250,204,21,0.6)]"
+                            : "border-gray-600 bg-white/5 hover:border-yellow-200 hover:bg-white/10"
                         }`}
                 >
-                <span className="drop-shadow-md transform transition-transform group-hover:rotate-12">{profile.emoji}</span>
+                <span className="drop-shadow-md transform transition-transform group-hover:rotate-12 group-hover:scale-110">{profile.emoji}</span>
                 </div>
             </div>
             
             <div
-              className={`mt-3 px-4 py-1 rounded-full text-lg font-bold transition-colors duration-300 shadow-sm
+              className={`mt-4 px-5 py-1 rounded-full text-lg font-bold transition-all duration-300
                   ${
                     selectedProfileId === profile.id
-                      ? "bg-red-600 text-white"
-                      : "bg-white text-gray-600 group-hover:text-green-600"
+                      ? "bg-gradient-to-r from-yellow-400 to-yellow-600 text-black shadow-lg scale-110"
+                      : "text-gray-400 group-hover:text-yellow-200"
                   }`}
             >
               {profile.name}
@@ -232,32 +223,33 @@ const ProfileSelection = ({ onSelectProfile }) => {
       </div>
 
       <button
-        className={`px-10 py-4 rounded-full text-xl font-bold shadow-xl transition-all duration-300 relative z-10 border-4 border-white
+        className={`px-12 py-4 rounded-full text-xl font-bold shadow-2xl transition-all duration-500 relative z-10 border border-white/20
             ${
               selectedProfileId
-                ? "bg-gradient-to-r from-green-500 to-green-700 text-white hover:scale-105 hover:shadow-green-200/50"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                ? "bg-gradient-to-r from-yellow-500 via-yellow-400 to-yellow-600 text-black hover:scale-105 hover:shadow-[0_0_40px_rgba(234,179,8,0.6)]"
+                : "bg-gray-800 text-gray-500 cursor-not-allowed"
             }`}
         onClick={handleEnterClick}
         disabled={!selectedProfileId}
       >
-        {selectedProfileId ? "🎄 เข้าสู่ระบบสุขภาพ 🎄" : "เลือกชื่อผู้ใช้ก่อนนะ"}
+        {selectedProfileId ? "🎉 เริ่มต้นปีใหม่สุขภาพดี 🎉" : "เลือกโปรไฟล์ของคุณ"}
       </button>
 
-      <div className="absolute bottom-0 w-full h-12 bg-white rounded-t-[50%] opacity-80 z-0"></div>
+      {/* Decorative Light Glow at bottom */}
+      <div className="absolute bottom-0 w-full h-32 bg-gradient-to-t from-yellow-500/20 to-transparent z-0"></div>
     </div>
   );
 };
 
-// --- Component ย่อยสำหรับแสดงผลสถิติ (ธีมคริสต์มาส) ---
+// --- Component ย่อยสำหรับแสดงผลสถิติ (ธีมปีใหม่) ---
 const StatsDisplay = ({ stats, isLoading }) => {
-  // Card สไตล์กระดาษห่อของขวัญ
-  const cardStyle = "mb-6 p-6 bg-white border-4 border-dashed border-red-200 rounded-3xl text-center shadow-lg relative overflow-hidden";
+  // Card สไตล์ Elegant Dark/Gold
+  const cardStyle = "mb-6 p-6 bg-white border-2 border-yellow-100 rounded-3xl text-center shadow-lg relative overflow-hidden";
   
   if (isLoading) {
     return (
       <div className={cardStyle}>
-        <p className="text-green-600 font-medium animate-pulse">กำลังคำนวณสถิติจากขั้วโลกเหนือ... ⏳</p>
+        <p className="text-yellow-600 font-medium animate-pulse">กำลังประมวลผลข้อมูลปี 2026... ⏳</p>
       </div>
     );
   }
@@ -267,7 +259,7 @@ const StatsDisplay = ({ stats, isLoading }) => {
       <div className={cardStyle}>
         <div className="text-4xl mb-2">📜</div>
         <p className="text-gray-500 font-medium">
-          ยังไม่มีข้อมูลในรายการ (List ว่างเปล่า!)
+           New Year's List ยังว่างอยู่ (เริ่มบันทึกกันเถอะ!)
         </p>
       </div>
     );
@@ -275,52 +267,48 @@ const StatsDisplay = ({ stats, isLoading }) => {
 
   let colorClass = "text-green-600";
   let bgBadge = "bg-green-100";
-  let emoji = "🌟";
-  let advice = "ยอดเยี่ยมมาก!";
+  let emoji = "✨";
+  let advice = "สุดยอด! ขอให้แข็งแรงตลอดปี";
 
   if (stats.assessment.includes("สูง")) { 
       colorClass = "text-red-600"; 
       bgBadge = "bg-red-100";
       emoji = "🚨";
-      advice = "ระวังสุขภาพด้วยนะ";
+      advice = "ปีใหม่นี้ ดูแลความดันหน่อยนะ";
   }
   if (stats.assessment.includes("ต่ำ")) { 
       colorClass = "text-blue-500"; 
       bgBadge = "bg-blue-100";
       emoji = "❄️"; 
-      advice = "พักผ่อนเยอะๆ";
+      advice = "พักผ่อนเยอะๆ หลังปาร์ตี้";
   }
   if (stats.assessment.includes("ค่อนข้าง")) { 
       colorClass = "text-yellow-600"; 
       bgBadge = "bg-yellow-100";
       emoji = "⚠️"; 
-      advice = "คุมอาหารหน่อยนะ";
+      advice = "คุมอาหารฉลองปีใหม่ด้วยนะ";
   }
 
   return (
     <div className={cardStyle}>
-      {/* ริบบิ้นมุม */}
-      <div className="absolute top-0 right-0 -mr-2 -mt-2 w-16 h-16 overflow-hidden">
-         <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold px-4 py-1 transform rotate-45 translate-x-4 translate-y-2 shadow-md">
-            STATS
-         </div>
-      </div>
+      {/* ริบบิ้นมุมทอง */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-200 via-yellow-500 to-yellow-200"></div>
 
-      <h2 className="text-gray-500 text-sm uppercase tracking-wider font-semibold mb-2">
-        ค่าเฉลี่ย {stats.count} ครั้งล่าสุด
+      <h2 className="text-gray-500 text-xs uppercase tracking-widest font-semibold mb-2">
+        STATS (LAST {stats.count})
       </h2>
       <div className="flex items-end justify-center gap-2 mb-3">
-          <span className="text-5xl font-bold text-gray-800 tracking-tighter">{stats.avgSys}</span>
-          <span className="text-3xl text-gray-400 font-light">/</span>
-          <span className="text-5xl font-bold text-gray-800 tracking-tighter">{stats.avgDia}</span>
-          <span className="text-sm text-gray-500 font-medium mb-2 ml-1">mmHg</span>
+          <span className="text-5xl font-bold text-gray-800 tracking-tighter drop-shadow-sm">{stats.avgSys}</span>
+          <span className="text-3xl text-yellow-500 font-light">/</span>
+          <span className="text-5xl font-bold text-gray-800 tracking-tighter drop-shadow-sm">{stats.avgDia}</span>
+          <span className="text-sm text-gray-400 font-medium mb-2 ml-1">mmHg</span>
       </div>
       
-      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${bgBadge} ${colorClass} font-bold text-lg`}>
+      <div className={`inline-flex items-center gap-2 px-6 py-2 rounded-full ${bgBadge} ${colorClass} font-bold text-lg shadow-inner`}>
         <span>{emoji}</span>
         <span>{stats.assessment}</span>
       </div>
-      <p className="mt-2 text-sm text-gray-400 italic">"{advice}"</p>
+      <p className="mt-3 text-sm text-gray-500 italic">"{advice}"</p>
     </div>
   );
 };
@@ -334,7 +322,7 @@ const getPressureAssessment = (sys, dia) => {
   return "ปกติ";
 };
 
-// --- Dashboard (ธีมคริสต์มาสจัดเต็ม) ---
+// --- Dashboard (ธีม Happy New Year 2026) ---
 const Dashboard = ({ profile, onLogout }) => {
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
@@ -346,11 +334,6 @@ const Dashboard = ({ profile, onLogout }) => {
   const [isStatsLoading, setIsStatsLoading] = useState(true);
 
   const BACKEND_API_URL = "https://pmi-project.onrender.com";
-
-  // ... (Logic fetchStats, fetchHistory, handleSubmit, handleDelete เหมือนเดิม) ...
-  // เพื่อความกระชับของโค้ด ผมจะละไว้ในส่วน Logic แต่เน้นที่ UI 
-  // แต่ในการใช้งานจริงต้องใส่ Logic กลับเข้าไปด้วยนะครับ 
-  // (ผมใส่คืนให้ครบถ้วนด้านล่างนี้ครับ)
 
   const fetchStats = async () => {
     setIsStatsLoading(true);
@@ -387,7 +370,7 @@ const Dashboard = ({ profile, onLogout }) => {
       setHistory(data);
     } catch (error) {
       console.error("Error fetching history:", error);
-      setMessage({ type: "error", text: "❌ ไม่สามารถดึงข้อมูลจากถุงของขวัญได้" });
+      setMessage({ type: "error", text: "❌ ไม่สามารถดึงข้อมูลย้อนหลังได้" });
     } finally {
       setIsLoading(false);
     }
@@ -412,7 +395,7 @@ const Dashboard = ({ profile, onLogout }) => {
       });
       const data = await response.json();
       if (response.ok) {
-        setMessage({ type: "success", text: "🎁 บันทึกลงสมุดเรียบร้อย!" });
+        setMessage({ type: "success", text: "🎆 บันทึกสำเร็จ! สุขภาพดีรับปีใหม่" });
         setSystolic(""); setDiastolic(""); setFeeling("");
         setHistory((prev) => [data.newEntry, ...prev.filter((item) => item.id !== data.newEntry.id)]);
         fetchStats();
@@ -441,60 +424,59 @@ const Dashboard = ({ profile, onLogout }) => {
   const chartData = [...history].map((item) => ({ ...item, date: item.date })).reverse();
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-screen pt-12 p-4 font-Kanit bg-holly relative overflow-hidden">
+    <div className="flex flex-col items-center justify-start min-h-screen pt-12 p-4 font-Kanit bg-gray-50 relative overflow-hidden">
       <GlobalStyles />
-      <SnowOverlay count={20} />
-      <ChristmasLights />
+      <ConfettiOverlay count={20} />
+      <div className="absolute inset-0 bg-gold-pattern z-0 pointer-events-none"></div>
       
       {/* Main Card Container */}
-      <div className="bg-white/95 backdrop-blur p-6 sm:p-8 rounded-3xl shadow-2xl w-full max-w-2xl text-center border-8 border-red-100 relative z-10">
+      <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 rounded-[2rem] shadow-2xl w-full max-w-2xl text-center border-t-8 border-yellow-400 relative z-10">
         
         {/* Header Profile */}
-        <div className="flex justify-between items-center mb-8 pb-4 border-b-2 border-dashed border-gray-200">
+        <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
            <div className="text-left">
-              <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider">Current User</span>
+              <span className="block text-yellow-600 text-[10px] font-bold uppercase tracking-widest">Active User</span>
               <span className="text-xl font-bold text-gray-800 flex items-center gap-2">
                  {profile.emoji} {profile.name}
               </span>
            </div>
-           <button onClick={onLogout} className="text-sm font-semibold text-red-500 hover:text-red-700 bg-red-50 px-3 py-1 rounded-full transition-colors">
-             ออกจากระบบ 🚪
+           <button onClick={onLogout} className="text-xs font-semibold text-gray-500 hover:text-red-500 bg-gray-100 px-4 py-2 rounded-full transition-colors border border-transparent hover:border-red-200">
+             Logout 🚪
            </button>
         </div>
 
-        <h1 className="text-3xl font-bold text-red-700 mb-6 drop-shadow-sm flex items-center justify-center gap-2">
-          🩺 บันทึกความดัน
-          <span className="text-2xl animate-bounce">🎄</span>
+        <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-yellow-800 mb-6 drop-shadow-sm flex items-center justify-center gap-2">
+          🎯 Health Goals 2026
         </h1>
 
         <StatsDisplay stats={stats} isLoading={isStatsLoading} />
 
-        {/* Input Form Area with Candy Cane Border Effect */}
-        <div className="bg-red-50 p-6 rounded-2xl border-2 border-red-100 relative mb-8">
-            <div className="absolute -top-3 left-4 bg-red-100 text-red-700 px-3 py-1 rounded-lg text-sm font-bold shadow-sm">
-                📝 จดบันทึกวันนี้
+        {/* Input Form Area */}
+        <div className="bg-gradient-to-b from-gray-50 to-white p-6 rounded-2xl border border-gray-200 shadow-inner relative mb-8">
+            <div className="absolute -top-3 left-4 bg-gray-800 text-yellow-400 px-4 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+               <span>✏️</span> New Entry
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 mt-2">
             <div className="grid grid-cols-2 gap-4">
                 <div className="relative">
-                    <label className="text-xs text-gray-500 mb-1 block text-left pl-1">ตัวบน (SYS)</label>
+                    <label className="text-xs text-gray-500 mb-1 block text-left pl-1 uppercase font-semibold">Systolic (บน)</label>
                     <input
                         type="number"
                         placeholder="120"
                         value={systolic}
                         onChange={(e) => setSystolic(e.target.value)}
-                        className="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-500 focus:ring-green-200 focus:outline-none text-center text-xl font-bold text-green-800 placeholder-green-200 bg-white"
+                        className="w-full p-3 border-2 border-gray-100 rounded-xl focus:border-yellow-400 focus:ring-4 focus:ring-yellow-100 focus:outline-none text-center text-xl font-bold text-gray-800 placeholder-gray-300 bg-white transition-all"
                     />
                 </div>
                 <div className="relative">
-                    <label className="text-xs text-gray-500 mb-1 block text-left pl-1">ตัวล่าง (DIA)</label>
+                    <label className="text-xs text-gray-500 mb-1 block text-left pl-1 uppercase font-semibold">Diastolic (ล่าง)</label>
                     <input
                         type="number"
                         placeholder="80"
                         value={diastolic}
                         onChange={(e) => setDiastolic(e.target.value)}
-                        className="w-full p-3 border-2 border-red-200 rounded-xl focus:border-red-500 focus:ring-red-200 focus:outline-none text-center text-xl font-bold text-red-800 placeholder-red-200 bg-white"
+                        className="w-full p-3 border-2 border-gray-100 rounded-xl focus:border-blue-400 focus:ring-4 focus:ring-blue-100 focus:outline-none text-center text-xl font-bold text-gray-800 placeholder-gray-300 bg-white transition-all"
                     />
                 </div>
             </div>
@@ -502,23 +484,21 @@ const Dashboard = ({ profile, onLogout }) => {
             <select
                 value={feeling}
                 onChange={(e) => setFeeling(e.target.value)}
-                className="w-full p-3 border-2 border-yellow-200 rounded-xl text-gray-700 focus:border-yellow-400 focus:outline-none bg-white"
+                className="w-full p-3 border-2 border-gray-100 rounded-xl text-gray-700 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 focus:outline-none bg-white transition-all"
             >
-                <option value="">-- ความรู้สึกวันนี้ 🎁 --</option>
-                <option value="ดีมาก">😊 ดีมาก (สดชื่นสุดๆ)</option>
+                <option value="">-- ความรู้สึกวันนี้ 🎇 --</option>
+                <option value="สดชื่น">😎 สดชื่น (Ready for 2026)</option>
                 <option value="ปกติ">🙂 ปกติ</option>
-                <option value="หน่วงๆ">😟 หน่วงๆ (เหมือนแบกถุงของขวัญ)</option>
-                <option value="ไม่ค่อยดี">🤢 ไม่ค่อยดี (อยากพักผ่อน)</option>
+                <option value="ตึงเครียด">🤯 ตึงเครียด/งานหนัก</option>
+                <option value="แฮงค์/เพลีย">🥴 แฮงค์/เพลีย</option>
+                <option value="ไม่สบาย">🤒 ไม่สบาย</option>
             </select>
 
             <button
                 type="submit"
-                className="w-full bg-green-500 text-white py-3 rounded-xl hover:opacity-90 transition-all font-bold text-lg shadow-md border-2 border-white ring-2 ring-red-200 mt-2"
-                style={{ textShadow: '0 2px 2px rgba(0, 0, 0, 0.5)' }}
+                className="w-full bg-gradient-to-r from-gray-900 to-gray-700 text-yellow-400 py-3 rounded-xl hover:shadow-lg hover:shadow-yellow-500/20 transition-all font-bold text-lg border border-gray-800 mt-2 active:scale-95"
             >
-                <p className="text-white">
-                  บันทึกข้อมูล 🎅
-                </p>
+                บันทึกข้อมูล 🚀
             </button>
             </form>
         </div>
@@ -526,7 +506,7 @@ const Dashboard = ({ profile, onLogout }) => {
         {/* Message Box */}
         {message.text && (
           <div className={`mb-6 p-4 rounded-xl font-medium flex items-center justify-center gap-2 animate-pulse ${
-              message.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              message.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"
             }`}>
             <span>{message.type === "success" ? "✅" : "❌"}</span>
             {message.text}
@@ -537,19 +517,19 @@ const Dashboard = ({ profile, onLogout }) => {
         {history.length > 0 && (
           <div className="mb-8">
             <h2 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
-              <span className="text-red-500">📈</span> กราฟสุขภาพ
+              <span className="text-yellow-500">📈</span> Trends
             </h2>
-            <div className="p-2 bg-white rounded-2xl border-2 border-gray-100 shadow-inner">
+            <div className="p-2 bg-white rounded-2xl border border-gray-100 shadow-sm">
               <ResponsiveContainer width="100%" height={250}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                   <XAxis dataKey="date" stroke="#9ca3af" fontSize={10} tickMargin={10} />
                   <YAxis domain={[50, 180]} stroke="#9ca3af" fontSize={10} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#fff', borderRadius: '12px', border: '2px solid #fee2e2', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ backgroundColor: '#1f2937', color: '#fff', borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                   />
-                  <Line type="monotone" dataKey="systolic" stroke="#dc2626" strokeWidth={3} dot={{ r: 4, fill: '#dc2626', strokeWidth: 2, stroke: '#fff' }} />
-                  <Line type="monotone" dataKey="diastolic" stroke="#16a34a" strokeWidth={3} dot={{ r: 4, fill: '#16a34a', strokeWidth: 2, stroke: '#fff' }} />
+                  <Line type="monotone" dataKey="systolic" stroke="#eab308" strokeWidth={3} dot={{ r: 4, fill: '#eab308', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="diastolic" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -558,34 +538,36 @@ const Dashboard = ({ profile, onLogout }) => {
 
         {/* History List */}
         <div className="text-left">
-          <h2 className="text-lg font-bold text-gray-700 mb-4 pl-2 border-l-4 border-green-500">
-            📜 รายการย้อนหลัง (Naughty or Nice List)
+          <h2 className="text-lg font-bold text-gray-700 mb-4 pl-2 border-l-4 border-yellow-400">
+            🗓️ ประวัติ (History)
           </h2>
           
           {history.length > 0 ? (
             <ul className="space-y-3">
               {history.map((item) => (
-                <li key={item.id} className="group bg-white border border-gray-100 rounded-xl p-3 flex justify-between items-center shadow-sm hover:shadow-md hover:border-red-200 transition-all">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-green-50 text-green-700 text-xs font-bold px-2 py-1 rounded-md">
-                        {item.date.split(' ')[0]}
+                <li key={item.id} className="group bg-white border border-gray-100 rounded-xl p-3 flex justify-between items-center shadow-sm hover:shadow-md hover:border-yellow-300 transition-all">
+                  <div className="flex items-center gap-4">
+                    <div className="flex flex-col items-center justify-center bg-gray-50 text-gray-500 text-[10px] font-bold w-12 h-12 rounded-lg border border-gray-200">
+                        <span>{item.date.split(' ')[0].split('/')[0]}</span>
+                        <span className="text-xs text-gray-800">{item.date.split(' ')[0].split('/')[1]}</span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="font-bold text-gray-800 text-lg leading-none">
-                        {item.systolic} <span className="text-gray-300">/</span> {item.diastolic}
+                        <span className="font-bold text-gray-800 text-xl leading-none font-Kanit tracking-tight">
+                        {item.systolic} <span className="text-gray-300 text-base">/</span> {item.diastolic}
                         </span>
-                        {item.feeling && <span className="text-xs text-gray-400">{item.feeling}</span>}
+                        {item.feeling && <span className="text-xs text-gray-400 mt-1 flex items-center gap-1">📝 {item.feeling}</span>}
                     </div>
                   </div>
-                  <button onClick={() => handleDelete(item.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                  <button onClick={() => handleDelete(item.id)} className="w-8 h-8 flex items-center justify-center rounded-full bg-transparent text-gray-300 hover:bg-red-50 hover:text-red-500 transition-all">
                     ✕
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                <p className="text-gray-400">ยังไม่มีข้อมูล... เริ่มต้นบันทึกกันเถอะ!</p>
+            <div className="text-center py-10 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                <div className="text-4xl grayscale opacity-30 mb-2">🎈</div>
+                <p className="text-gray-400">เริ่มบันทึกสุขภาพต้อนรับปีใหม่กัน!</p>
             </div>
           )}
         </div>
